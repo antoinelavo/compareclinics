@@ -1,13 +1,13 @@
 import Link from 'next/link';
-import SATHagwonCard from '@/components/SATHagwonCard';
-import allHagwonsData from '@/data/sat-hagwons';
+import HagwonCard from '@/components/ClinicCard';
+import allHagwonsData from '@/data/hagwons';
 import FilterLogic from './FilterLogic.client';
 
 export const revalidate = 3600; // rebuild every hour
 
 export const metadata = {
-  title: 'SAT 학원 29곳 추천 및 비교 [2025년 최신]',
-  description: 'SAT 학원 추천, 비교, 선택 가이드 – 2025년 최신 업데이트',
+  title: 'IB 학원 29곳 추천 및 비교 [2025년 최신]',
+  description: 'IB 학원 추천, 비교, 선택 가이드 – 2025년 최신 업데이트',
   robots: {
     index: true,
     follow: true,
@@ -24,9 +24,9 @@ export const metadata = {
   },
 
   openGraph: {
-    title: 'SAT 학원 29곳 추천 및 비교 [2025년 최신]',
-    description: 'SAT 학원 추천, 비교, 선택 가이드 – 2025년 최신 업데이트',
-    url: 'https://ibmaster.net/sat-hagwons',
+    title: 'IB 학원 29곳 추천 및 비교 [2025년 최신]',
+    description: 'IB 학원 추천, 비교, 선택 가이드 – 2025년 최신 업데이트',
+    url: 'https://ibmaster.net/hagwons',
     siteName: 'IB Master',
     locale: 'ko-KR',
     type: 'website',
@@ -42,17 +42,19 @@ export default async function HagwonsPage({ searchParams }) {
       : sp.lessonType
       ? [sp.lessonType]
       : [],
+
     format: Array.isArray(sp.format) ? sp.format : sp.format ? [sp.format] : [],
     service: Array.isArray(sp.service) ? sp.service : sp.service ? [sp.service] : [],
   };
-
+  console.log(selected)
+  
   return (
     <main className="min-h-screen max-w-4xl mx-[5dvw] lg:mx-auto mb-[10em]">
-      <h1>SAT 학원 29곳 추천 및 비교 [2025년 최신]</h1>
+      <h1>IB 학원 29곳 추천 및 비교 [2025년 최신]</h1>
 
       <article>
-        <p><strong>최신 업데이트:</strong> 2025년 6월 20일</p>
-        <p>SAT 학원은 SAT 시험을 준비 중인 학생들에게 집중적인 도움을 제공합니다. 본 페이지는 학부모와 학생들이 신뢰할 수 있는 SAT 학원을 선택할 수 있도록 도움을 주는 것을 목적으로 하며, 학원 선택 시 고려해야 할 요소, 수업 구성, 과외와의 차이점 등을 상세히 안내합니다.</p>
+        <p><strong>최신 업데이트:</strong> 2025년 6월 16일</p>
+        <p>IB 학원은 IB 과정을 이수 중이거나 준비 중인 학생들에게 집중적인 도움을 제공합니다. 본 페이지는 학부모와 학생들이 신뢰할 수 있는 IB 학원을 선택할 수 있도록 도움을 주는 것을 목적으로 하며, 학원 선택 시 고려해야 할 요소, 수업 구성, 과외와의 차이점 등을 상세히 안내합니다.</p>
       </article>
 
       <FilterLinks selected={selected} />
@@ -65,9 +67,9 @@ export default async function HagwonsPage({ searchParams }) {
             data-region={card.region}
             data-lessontype={card.lessonType}
             data-format={card.format}
-            data-service={Array.isArray(card.services) ? card.services.join(',') : ''}
+            data-service={card.ia_ee_tok ? 'IA,EE,TOK' : ''}
           >
-            <SATHagwonCard {...card} priority={i === 0} />
+            <HagwonCard {...card} priority={i === 0} />
           </div>
         ))}
       </div>
@@ -79,12 +81,12 @@ export default async function HagwonsPage({ searchParams }) {
 }
 
 function FilterLinks({ selected }) {
-  const base = '/sat-hagwons';
+  const base = '/hagwons';
   const filterGroups = [
-    { title: '지역', param: 'region', options: ['전체', '강남', '분당', '부산', '온라인'] },
-    { title: '수업 방식', param: 'lessonType', options: ['1:1', '그룹', '인강'] },
+    { title: '지역', param: 'region', options: ['전체', '강남', '서초', '제주', '부산', '해외'] },
+    { title: '수업 방식', param: 'lessonType', options: ['개인', '그룹'] },
     { title: '수업 형태', param: 'format', options: ['대면', '온라인'] },
-    { title: '추가 과목', param: 'service', options: ['AP', 'ACT', 'IB', 'GCSE', 'TOEFL', '컨설팅'] },
+    { title: '추가 과목', param: 'service', options: ['IA', 'EE', 'TOK'] },
   ];
 
   return (

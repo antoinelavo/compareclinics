@@ -1,14 +1,17 @@
 import Header from '@/components/Header.server';
 import Footer from '@/components/Footer.server';
 import '@/styles/globals.css';
-import { Noto_Sans_KR } from "next/font/google";
 import Script from 'next/script'
 
+import { Inter } from "next/font/google";
 
-const notoSansKR = Noto_Sans_KR({
-    variable: "--fonts--noto-sans-kr",
-    subsets: ["latin"],
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',    // optional: if you want to expose it as a CSS variable
+  weight: ['400', '700'],       // choose the font-weights you need
+  display: 'swap',              // recommended for performance
 })
+
 
 export const metadata = {
   icons: {
@@ -18,7 +21,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={notoSansKR.className}>
+    <html lang="en" className={inter.variable}>
       <head>
         <Script
           strategy="afterInteractive"

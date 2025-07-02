@@ -1,280 +1,142 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import ClinicCard from '@/components/ClinicCard';
+import allClinicsData from '@/data/all_clinics.json';
+import FilterLogic from './clinics/FilterLogic.client';
 
-export const metadata = {
-  title: '수수료 없는 IB 전문 과외 플랫폼 | IB Master',
-  description: '선생, 학생 모두 수수료 없는 IB 과외 전문 플랫폼. IB 수학, 영어, 물리 과외를 믿고 맡길 수 있는 곳, IB Master',
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
-  icons: {
-    icon: '/images/favicon.ico'
-  },
+export const revalidate = 3600; // rebuild every hour
 
-  openGraph: {
-    title: '수수료 없는 IB 전문 과외 플랫폼 | IB Master',
-    description: '선생, 학생 모두 수수료 없는 IB 과외 전문 플랫폼. IB 수학, 영어, 물리 과외를 믿고 맡길 수 있는 곳, IB Master',
-    url: 'https://ibmaster.net/',
-    siteName: 'IB Master',
-    locale: 'ko-KR',
-    type: 'website',
-  },
+
+export default async function HagwonsPage({ searchParams }) {
+  const sp = await searchParams;
+  const selected = {
+    region: Array.isArray(sp.region) ? sp.region : sp.region ? [sp.region] : [],
+    lessonType: Array.isArray(sp.lessonType)
+      ? sp.lessonType
+      : sp.lessonType
+      ? [sp.lessonType]
+      : [],
+
+    format: Array.isArray(sp.format) ? sp.format : sp.format ? [sp.format] : [],
+    service: Array.isArray(sp.service) ? sp.service : sp.service ? [sp.service] : [],
+  };
+  console.log(selected)
+  
+  return (
+    <main className="min-h-screen max-w-4xl mx-[5dvw] lg:mx-auto mb-[10em]">
+      <h1>Compare Top Plastic Surgery Clinics in Korea</h1>
+
+      <article>
+        <p><strong>Updated:</strong> 2025-07-02</p>
+        <p>At Compare Clinics, we simplify your search for plastic surgery in Korea by aggregating comprehensive clinic profiles, board-certified surgeons, genuine patient reviews, transparent pricing data, and before-and-after galleries—all in one user-friendly platform. Whether you’re considering rhinoplasty in Seoul, breast augmentation in Busan, or facelifts in Daegu, our side-by-side comparison tools and expert insights empower you to evaluate top-rated clinics across Korea at a glance. We update our listings regularly with the latest accreditation statuses, price packages, and special promotions, so you always have accurate, up-to-date information to make a confident, informed decision. Start your journey to aesthetic transformation today and discover why Korea remains the world’s premier destination for plastic surgery.</p>
+      </article>
+
+      {/* <FilterLinks selected={selected} /> */}
+
+      <div className="space-y-5 flex flex-col mt-6" id="hagwon-list">
+        {allClinicsData.map((card, i) => (
+          <div
+            key={`${card.id ?? 'hagwon'}-${i}`}
+            data-hagwon
+            data-region={card.region}
+            data-lessontype={card.lessonType}
+            data-format={card.format}
+            data-service={card.ia_ee_tok ? 'IA,EE,TOK' : ''}
+          >
+            <ClinicCard {...card} priority={i === 0} />
+          </div>
+        ))}
+      </div>
+
+      {/* Hydrate client-side filtering logic */}
+      <FilterLogic />
+    </main>
+  );
 }
 
-export default function Home() {
+function FilterLinks({ selected }) {
+  const base = '/';
+  const filterGroups = [
+    { title: 'Location', param: 'region', options: ['All', 'Seoul', 'Busan'] },
+    { title: '추가 과목', param: 'service', options: ['IA', 'EE', 'TOK'] },
+  ];
+
   return (
-    <div>
-      {/* Hero Section */}
-      <div
-          id="heroSection"
-          className="flex flex-col md:flex-row justify-center mx-auto bg-gradient-to-b from-[#32ade61a] to-gray-50 pt-[1em]"
-        >
-          <div className="flex flex-col justify-center text-left px-6 text-center md:text-left">
-            <h1 className="text-4xl font-bold mb-2 text-balance leading-[1.2] sm:leading-relaxed">IB 과외 무료 매칭 플랫폼</h1>
-            <p className="text-l font-normal text-gray-500 leading-[2em] mb-6 text-balance">
-              국내 유일 수수료 0원 과외 플랫폼
-            </p>
-            <div className="flex gap-4 justify-center md:justify-start">
-              <Link href="/find" className="bg-blue-500 text-white px-2 sm:px-6 py-2 rounded-lg hover:bg-blue-600 transition">
-                과외 찾기
-              </Link>
-              <Link href="/apply" className="border border-blue-500 text-blue-500 px-2 sm:px-6 py-2 rounded-lg bg-white hover:bg-blue-100 transition">
-                선생님 등록하기
-              </Link>
+    <section className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm flex flex-wrap gap-x-[4em] gap-y-[3em] justify-center md:justify-start my-[1em]">
+      {filterGroups.map(({ title, param, options }) => {
+        const allOpts = options.filter(opt => opt !== '전체');
+        const values = selected[param] || [];
+        const isAllSelected = values.length === 0 || values.length === allOpts.length;
+        return (
+          <div key={param}>
+            <h3 className="font-bold text-sm text-gray-800 mb-[1em] md:mb-[0.5em]">{title}</h3>
+            <div className="flex flex-col md:flex-row gap-y-[0.75em] md:gap-x-[0.25em] min-w-[5em]">
+              {options.map(option => {
+                // Determine selection state and next params
+                let updatedValues = [];
+
+                if (option === '전체') {
+                  // 전체 selects all or clears
+                  updatedValues = isAllSelected ? [] : allOpts;
+                } else {
+                  // toggle this option
+                  updatedValues = values.includes(option)
+                    ? values.filter(v => v !== option)
+                    : [...values, option];
+                }
+
+                // Build new query params
+                const params = new URLSearchParams();
+                Object.entries(selected).forEach(([key, vals]) => {
+                  if (key === param) return;
+                  vals.forEach(v => params.append(key, v));
+                });
+                updatedValues.forEach(v => params.append(param, v));
+                const href = `${base}?${params.toString()}`;
+
+                // Determine active styling
+                const isActive =
+                  option === '전체' ? isAllSelected : values.includes(option);
+
+                return (
+                  <Link
+                    key={`${param}-${option}`}
+                    href={href}
+                    className={`text-sm px-3 py-1.5 rounded-full border transition font-medium shadow-sm whitespace-nowrap flex items-center gap-1 ${
+                      isActive
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'text-gray-600 border-gray-300 hover:bg-gray-100 hover:border-gray-400'
+                    }`}
+                    scroll={false}
+                  >
+                    {isActive ? (
+                      // Active
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="lucide lucide-check-icon mr-[0.25em]"
+                      >
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                    ) : (
+                      // Inactive
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-icon lucide-circle mr-[0.25em]"><circle cx="12" cy="12" r="10"/></svg>
+                    )}
+                    {option}
+                  </Link>
+
+                );
+              })}
             </div>
           </div>
-
-          
-          <div
-            id="heroSampleProfile"
-            className="relative w-[95svw] max-w-[600px] h-[50svh] max-h-[500px] my-0 md:my-auto mx-auto md:mx-0 block"
-          >
-              <Image
-                src="/images/SampleProfiles.svg"
-                alt="샘플 프로필"
-                fill
-                priority={false}
-                placeholder="blur" 
-                blurDataURL="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mOs2fv/PwAHLgM5yEquVgAAAABJRU5ErkJggg=="
-              />
-          </div>
-        </div>
-
-
-      {/* Problem Quote */}
-      <section id="problemQuote" className="max-w-4xl mx-auto px-4 text-left space-y-28 mt-[15em]">
-          <p className="text-2xl font-bold leading-relaxed max-w-[22em] text-balance">
-            비싼 과외비를 내면 좋은 수업을 받을 줄 알았는데,
-            알고 보니 <span className="text-blue-500">수업료의 25%가 플랫폼</span>으로 간다고?
-          </p>
-
-        
-          <p className="text-2xl font-bold text-right leading-relaxed text-balance">
-            <span className="text-blue-500">플랫폼 수수료</span>를 내야하니,
-            <span className="text-blue-500">수업료</span>를 더 받을까?
-          </p>
-        
-
-        
-          <p className="text-2xl font-bold text-left leading-relaxed text-balance">
-            아무리 생각해도 수수료는 <span className="text-blue-500">부당해</span>!
-          </p>
-        
-      </section>
-
-
-      {/* Comparison Section */}
-      <section id="comparison" className="pt-32">
-        <p className="text-center text-gray-400 text-lg font-normal mb-[0.25em]">이러한 생각에서 시작된</p>
-        <p className="text-center text-black text-2xl font-bold px-8 text-balance leading-relaxed">선생님이 만든, 선생님과 학생을 위한 플랫폼</p>
-        <div id="comparisonBlocks" className="mt-16 flex flex-col md:flex-row justify-center gap-20 max-w-5xl mx-auto">
-          {/* 타 플랫폼 */}
-            <div className="flex flex-col gap-12 p-8 text-center mx-[10dvw] md:mx-0 bg-white border border-solid border-gray-200 shadow rounded-3xl">
-              <p className="text-[25px] font-bold text-gray-500">타 플랫폼</p>
-              {[
-                "수업료의 일부분을 플랫폼이 가져감",
-                "등록 비용, 견적서 등 선생님에게 비용 발생",
-                "IB 전문이 아님"
-              ].map((text, i) => (
-                <div key={i} className="flex flex-row gap-4 items-center text-left justify-start">
-                  <svg width="40" height="40" className="flex-none">
-                    <circle cx="20" cy="20" r="18" fill="#FF605D" fillOpacity="0.17" />
-                    <line x1="12" y1="12" x2="28" y2="28" stroke="#FF605D" strokeWidth="3" strokeLinecap="round" />
-                    <line x1="28" y1="12" x2="12" y2="28" stroke="#FF605D" strokeWidth="3" strokeLinecap="round" />
-                  </svg>
-                  <p className="font-bold text-black md:max-w-[10em] mb-0">{text}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* IB Master */}
-            <div className="flex flex-col gap-12 p-8 text-center mx-[10dvw] md:mx-0 bg-white border border-solid border-gray-200 shadow rounded-3xl">
-              <p className="text-[25px] font-bold text-black">
-                <span>IB </span>
-                <span className="text-blue-500">Master</span>
-              </p>
-              {[
-                "수업료에서 중간 수수료가 발생하지 않음",
-                "등록 비용, 견적서 발송 비용 없음",
-                "IB 전문"
-              ].map((text, i) => (
-                <div key={i} className="flex flex-row gap-4 items-center text-left justify-start">
-                  <svg width="40" height="40" className="flex-none">
-                    <circle cx="20" cy="20" r="18" fill="#28A745" fillOpacity="0.17" />
-                    <polyline
-                      points="10,20 18,28 30,14"
-                      stroke="#28A745"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      fill="none"
-                    />
-                  </svg>
-                  <p className="font-bold text-black md:max-w-[10em] mb-0">{text}</p>
-                </div>
-              ))}
-            </div>
-
-        </div>
-      </section>
-      {/* FAQ Section */}
-      <section className="max-w-3xl mx-auto my-[10dvh] px-4 py-24">
-        <h2 className="text-3xl font-bold text-center text-black mb-10">FAQ</h2>
-
-        <div className="space-y-4">
-          <details className="group p-6 bg-white border border-solid border-gray-200 shadow rounded-3xl">
-            <summary className="cursor-pointer text-lg font-normal text-black group-open:text-blue-600 transition">
-              프로필 게시 비용이 있나요?
-            </summary>
-            <p className="mt-[1em] mb-0 text-gray-700 leading-relaxed">
-              없습니다! <strong>IB Master</strong>는 100% 수수료, 이용료 0원 사이트입니다.
-            </p>
-          </details>
-
-          <details className="group p-6 bg-white border border-solid border-gray-200 shadow rounded-3xl">
-            <summary className="cursor-pointer text-lg font-normal text-black group-open:text-blue-600 transition">
-              IB 학원은 어떻게 찾나요?
-            </summary>
-            <p className="mt-[1em] mb-0 text-gray-700 leading-relaxed">
-              좋은 IB 전문 학원을 찾으려면 고급 정보를 가지고 많은 학원들을 비교해야 합니다.<br />
-              <strong>IB Master</strong>는 국내 유수의 IB 학원을 한눈에 볼 수 있게 정리해 두었으니,{" "}
-              <a href="/hagwons" className="text-blue-500 underline hover:text-blue-600">
-                IB 학원 추천 페이지
-              </a>
-              에서 확인해 보세요.
-            </p>
-          </details>
-
-          <details className="group p-6 bg-white border border-solid border-gray-200 shadow rounded-3xl">
-            <summary className="cursor-pointer text-lg font-normal text-black group-open:text-blue-600 transition">
-              학생들에게 제 연락처를 공유해도 되나요?
-            </summary>
-            <p className="mt-[1em] mb-0 text-gray-700 leading-relaxed">
-              네! 선생님 프로필 하단에 <strong>연락처 입력란</strong>이 있습니다!
-            </p>
-          </details>
-        </div>
-      </section>
-
-      {/* Text */}
-      
-      <section className="max-w-4xl mx-[5dvw] sm:mx-auto mb-[3em] px-6 py-12 bg-white border border-solid border-gray-200 shadow rounded-3xl">
-        <h2 className="text-3xl font-bold text-center text-black mb-8">IB 과외란?</h2>
-        <div className="space-y-6 text-m leading-8 text-gray-500">
-          <p>
-            IB 과외는 <strong>International Baccalaureate(IB)</strong> 과정을 이수하는 학생들을 위한 전문 수업입니다.
-            일반 고등학교와는 다른 평가 체계, 프로젝트 기반 과제, 전 세계 공통 기준을 바탕으로 한 IB 커리큘럼은 고유한 학습 전략을 요구합니다.
-          </p>
-          <p>
-            IB 과목마다 <strong>SL(Standard Level)</strong>과 <strong>HL(Higher Level)</strong>으로 나뉘어 있어 난이도와 범위가 다릅니다.
-            이에 따라 과목별 맞춤 전략과 시험 대비법이 중요하며, 일반적인 과외보다는 <strong>IB 전문 과외</strong>가 요구됩니다.
-          </p>
-          <p>
-            <strong>IB Master</strong>는 국내 유일의 <span className="text-blue-500 font-semibold">100% 수수료 없는 IB 과외 매칭 플랫폼</span>으로,
-            IB 졸업생을 포함한 전문 선생님들과 학생들을 직접 연결합니다.
-            각종 플랫폼의 수수료가 부당하다고 느껴 한 과외 선생님이 직접 만든 플랫폼으로,
-            모든 학생과 과외 선생님이 비용 없이 만날 수 있는 미래를 실천합니다.
-          </p>
-        </div>
-      </section>
-      
-      
-      
-      <section className="max-w-4xl mx-[5dvw] sm:mx-auto mb-[3em] px-6 py-12 bg-white border border-solid border-gray-200 shadow rounded-3xl">
-        <h2 className="text-3xl font-bold text-center text-black mb-8">IB 과외가 필요한 이유</h2>
-        <div className="space-y-6 text-m leading-8 text-gray-500">
-          <p>
-            IB 커리큘럼은 일반 고등학교 수업과 다르게, 자체적인 평가 방식과 과제 중심 학습이 특징입니다.
-            IA, EE, TOK 등 요소들이 성적에 큰 영향을 주며, 과목별로 HL/SL 난이도 구분이 있어 효과적인 대비가 필요합니다.
-          </p>
-          <p>
-            따라서 일반적인 과외가 아닌, IB에 특화된 선생님이 제공하는 맞춤형 과외가 필수입니다.
-            시험 대비는 물론, Internal Assessment, Extended Essay 작성까지 지원하는 과외를 통해 더 나은 성적을 기대할 수 있습니다.
-          </p>
-          <div className="text-center pt-4">
-            <a
-              href="/blog/about-ib"
-              className="inline-block text-blue-500 hover:underline text-[15px] font-medium"
-            >
-              IB 교육과정에 대해 더보기 →
-            </a>
-          </div>
-        </div>
-      </section>
-      
-
-      
-      <section className="max-w-4xl mx-[5dvw] sm:mx-auto px-6 py-12 bg-white border border-solid border-gray-200 shadow rounded-3xl">
-        <h2 className="text-3xl font-bold text-center text-black mb-8">IB 과외 시급은 얼마인가요?</h2>
-        <div className="space-y-6 text-m leading-8 text-gray-500">
-          <p>
-            IB 과외 시급은 선생님의 경력, 과목 난이도, 수업 방식(온라인/오프라인), 지역에 따라 다르지만,
-            평균적으로 시간당 <strong>4만 원에서 10만 원 사이</strong>로 형성되어 있습니다.
-            특히 HL 과목이나 영어 네이티브 수업은 시급이 더 높을 수 있습니다.
-          </p>
-          <p>
-            <strong>IB Master</strong>에서는 매칭 수수료가 없기 때문에,
-            다른 플랫폼과 달리 <strong>숨은 비용이 발생하지 않습니다.</strong>
-            선생님과 학생이 직접 소통하고 조건을 조율할 수 있어,
-            더 합리적인 시급으로 고퀄리티 과외를 받을 수 있습니다.
-          </p>
-          <div className="text-center pt-4">
-            <a
-              href="/blog/private-lesson-cost"
-              className="inline-block text-blue-500 hover:underline text-[15px] font-medium"
-            >
-              시급에 대해 더보기 →
-            </a>
-          </div>
-        </div>
-      </section>
-      
-
-
-
-      {/* Registration CTA */}
-      <section className="flex flex-col sm:flex-row justify-center items-center gap-8 px-4 py-20 bg-gradient-to-t from-[#32ade61a] to-gray-50 h-[60dvh]">
-        <Link href="/login" className="no-underline">
-          <div className="w-[80dvw] h-[10em] sm:w-[15em] sm:h-[15em] bg-blue-300/80 rounded-2xl flex flex-col items-center justify-center text-center transform transition-transform duration-300 hover:scale-105">
-            <p className="text-base text-black">회원 가입하고</p>
-            <p className="text-2xl font-bold text-black">과외 선생님 찾기</p>
-          </div>
-        </Link>
-        <Link href="/apply" className="no-underline">
-          <div className="w-[80dvw] h-[10em] sm:w-[15em] sm:h-[15em] bg-blue-300/30 rounded-2xl flex flex-col items-center justify-center text-center transform transition-transform duration-300 hover:scale-105">
-            <p className="text-base text-black">프로필 작성하고</p>
-            <p className="text-2xl font-bold text-black">선생님 등록하기</p>
-          </div>
-        </Link>
-      </section>
-    </div>
+        );
+      })}
+    </section>
   );
 }
