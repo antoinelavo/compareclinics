@@ -17,13 +17,10 @@ export default function Header() {
         </Link>
 
         {/* Desktop nav */}
-        {/* <nav className="hidden lg:flex justify-center">
+        <nav className="hidden lg:flex justify-center">
           <ul className="menu_items flex gap-[30px] items-center">
             {[
-              ['과외 찾기', '/find'],
-              ['학원 추천', '/hagwons'],
-              ['선생님 등록하기', '/apply'],
-              ['SAT 학원 추천', '/sat-hagwons']
+              ['Blog', '/blog']
             ].map(([label, href]) => (
               <li key={href} className="px-5">
                 <Link href={href} className="text-sm text-black font-normal hover:text-blue-500">
@@ -32,7 +29,7 @@ export default function Header() {
               </li>
             ))}
           </ul>
-        </nav> */}
+        </nav>
 
         {/* Mobile toggle/sidebar */}
         {/* <MobileMenuToggle /> */}

@@ -88,7 +88,7 @@ export default function BlogPost({ frontmatter, mdxHtml, toc }) {
         <meta property="og:description" content={frontmatter.description} />
         <meta
           property="og:image"
-          content={frontmatter.coverImage || '/images/mainlogo.svg'}
+          content={frontmatter.coverImage || '/images/mainlogo.png'}
         />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={frontmatter.title} />
@@ -106,10 +106,10 @@ export default function BlogPost({ frontmatter, mdxHtml, toc }) {
               headline: frontmatter.title,
               description: frontmatter.description,
               datePublished: frontmatter.date,
-              author: { "@type": "Person", name: "IB Master" },
+              author: { "@type": "Person", name: "Compare Clinics" },
               publisher: {
                 "@type": "Organization",
-                name: "IB Master",
+                name: "Compare Clinics",
                 logo: { "@type": "ImageObject" },
               },
             }),
@@ -196,7 +196,6 @@ export default function BlogPost({ frontmatter, mdxHtml, toc }) {
             )}
 
           <nav className="sticky top-[18em] space-y-2 border-l pl-4">
-            <h2 className="text-lg font-semibold mb-2">목차</h2>
             <ul className="space-y-4 text-sm text-gray-700 dark:text-gray-300">
               {toc.map(({ text, depth, id }) => (
                 <li key={id} className={depth === 2 ? 'ml-4' : ''}>
